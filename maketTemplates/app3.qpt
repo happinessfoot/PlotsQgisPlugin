@@ -1,0 +1,172 @@
+<Composer title="пр3" visible="1">
+ <Composition resizeToContentsMarginLeft="0" snapping="0" showPages="1" guidesVisible="1" resizeToContentsMarginTop="0" worldFileMap="{de3b7788-88ef-4079-b78b-e5edf3bc8105}" alignmentSnap="1" printResolution="300" paperWidth="210" gridVisible="0" snapGridOffsetX="0" smartGuides="1" snapGridOffsetY="0" resizeToContentsMarginRight="0" snapTolerancePixels="5" printAsRaster="0" generateWorldFile="0" paperHeight="297" numPages="1" snapGridResolution="10" resizeToContentsMarginBottom="0">
+  <symbol alpha="1" clip_to_extent="1" type="fill" name="">
+   <layer pass="0" class="SimpleFill" locked="0">
+    <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
+    <prop k="color" v="255,255,255,255"/>
+    <prop k="joinstyle" v="miter"/>
+    <prop k="offset" v="0,0"/>
+    <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
+    <prop k="offset_unit" v="MM"/>
+    <prop k="outline_color" v="0,0,0,255"/>
+    <prop k="outline_style" v="no"/>
+    <prop k="outline_width" v="0.26"/>
+    <prop k="outline_width_unit" v="MM"/>
+    <prop k="style" v="solid"/>
+   </layer>
+  </symbol>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="имя приемщика" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="282.644" page="1" id="recieverValue" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="128.842" y="282.644" visibility="1" zValue="26" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="38.3831" outlineWidth="0.3" excludeFromExports="0" uuid="{96e16e2c-eca9-4c24-854a-3dd8fce0b740}" height="6.2" itemRotation="0" frame="false" pagex="128.842">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLegend symbolWidth="7" title="Условные обозначения" rasterBorderWidth="0" titleAlignment="1" map="0" wmsLegendWidth="50" rasterBorderColor="0,0,0,255" wrapChar="" fontColor="#000000" legendFilterByAtlas="0" columnCount="1" wmsLegendHeight="25" columnSpace="2" symbolHeight="4" equalColumnWidth="0" resizeToContents="1" splitLayer="0" boxSpace="2" rasterBorder="1">
+   <styles>
+    <style marginBottom="2" name="title">
+     <styleFont description="MS Shell Dlg 2,16,-1,5,50,0,0,0,0,0" style=""/>
+    </style>
+    <style marginTop="2" name="group">
+     <styleFont description="MS Shell Dlg 2,14,-1,5,50,0,0,0,0,0" style=""/>
+    </style>
+    <style marginTop="2" name="subgroup">
+     <styleFont description="MS Shell Dlg 2,12,-1,5,50,0,0,0,0,0" style=""/>
+    </style>
+    <style marginTop="2" name="symbol">
+     <styleFont description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
+    </style>
+    <style marginTop="2" marginLeft="2" name="symbolLabel">
+     <styleFont description="MS Shell Dlg 2,12,-1,5,50,0,0,0,0,0" style=""/>
+    </style>
+   </styles>
+   <ComposerItem pagey="228.59" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="142.572" y="228.59" visibility="1" zValue="15" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="64.7" outlineWidth="0.3" excludeFromExports="0" uuid="{ba4be109-d48a-418a-84ca-a2e412329645}" height="48.2" itemRotation="0" frame="false" pagex="142.572">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLegend>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Дата: «__» __________ 20__ года" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="288.844" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="40.7067" y="288.844" visibility="1" zValue="14" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="63.2933" outlineWidth="0.3" excludeFromExports="0" uuid="{a7c46ec3-c1f6-42ee-8bb9-d5c392e4182f}" height="6.2" itemRotation="0" frame="false" pagex="40.7067">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="имя организации" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="282.644" page="1" id="organizationValue" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="40.7067" y="282.644" visibility="1" zValue="13" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="38.3831" outlineWidth="0.3" excludeFromExports="0" uuid="{db29aef6-385c-4d5a-8f14-849400f9906e}" height="6.2" itemRotation="0" frame="false" pagex="40.7067">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Достоверность и полноту сведений, указанных по данной странице, подтверждаю." htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="276.79" page="1" id="ending" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="40.7067" y="276.79" visibility="1" zValue="12" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="143.762" outlineWidth="0.3" excludeFromExports="0" uuid="{0444b4cc-1078-4efb-8d81-a514b8952f8c}" height="7.48081" itemRotation="0" frame="false" pagex="40.7067">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerMap followPreset="false" mapRotation="0" keepLayerSet="false" followPresetName="" id="0" previewMode="Cache" drawCanvasItems="true">
+   <Extent ymin="60.52127333182052382" xmin="54.22459108391137761" ymax="60.67702429686220711" xmax="54.35919667827045032"/>
+   <LayerSet/>
+   <Grid/>
+   <AtlasMap scalingMode="2" atlasDriven="0" margin="0.10000000000000001"/>
+   <ComposerItem pagey="50" page="1" id="mapImage" lastValidViewScaleFactor="3.07453" positionMode="0" positionLock="false" x="6" y="50" visibility="1" zValue="11" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="196" outlineWidth="0.3" excludeFromExports="0" uuid="{de3b7788-88ef-4079-b78b-e5edf3bc8105}" height="226.79" itemRotation="0" frame="false" pagex="6">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerMap>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="1:25000" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="43.8371" page="1" id="scaleValue" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="57.4146" y="43.8371" visibility="1" zValue="10" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="17.972" outlineWidth="0.3" excludeFromExports="0" uuid="{7582e88e-17e6-4010-8134-d7f0c49d0abd}" height="7.28784" itemRotation="0" frame="false" pagex="57.4146">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Масштаб" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="43.8371" page="1" id="scaleSign" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="41.0669" y="43.8371" visibility="1" zValue="9" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="17.972" outlineWidth="0.3" excludeFromExports="0" uuid="{9b3ce828-9454-4fdd-ad58-eeecd4c3b0d4}" height="7.28784" itemRotation="0" frame="false" pagex="41.0669">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="имя участкового лесничества" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,75,0,1,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="38.6256" page="1" id="localForestryValue" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="83.0663" y="38.6256" visibility="1" zValue="7" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="59.5055" outlineWidth="0.3" excludeFromExports="0" uuid="{77277a96-ac8b-440f-bec4-cadb076699f4}" height="6.79899" itemRotation="0" frame="false" pagex="83.0663">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Участковое лесничество:" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="38.6256" page="1" id="localForestrySign" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="40.7067" y="38.6256" visibility="1" zValue="6" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="45.9246" outlineWidth="0.3" excludeFromExports="0" uuid="{2e8a4fbb-0f7e-466e-8918-f3256b10f917}" height="7.28784" itemRotation="0" frame="false" pagex="40.7067">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="имя лесничества" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,75,0,1,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="33.1899" page="1" id="forestryValue" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="64.0292" y="33.1899" visibility="1" zValue="5" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="38.0743" outlineWidth="0.3" excludeFromExports="0" uuid="{c03c160d-2082-48fd-a1ef-09eb4352cf80}" height="6.79899" itemRotation="0" frame="false" pagex="64.0292">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Лесничество:" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="33.1899" page="1" id="forestrySign" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="40.7068" y="33.1899" visibility="1" zValue="4" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="36.6642" outlineWidth="0.3" excludeFromExports="0" uuid="{5353eedc-6caa-47fc-a9ba-703db0c2c306}" height="7.28784" itemRotation="0" frame="false" pagex="40.7068">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="имя края и региона" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,75,0,1,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="27.7399" page="1" id="regionName" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="41.0155" y="27.7399" visibility="1" zValue="3" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="38.0743" outlineWidth="0.3" excludeFromExports="0" uuid="{d2dafd03-e468-4332-99c0-d961ec4f34f1}" height="6.79899" itemRotation="0" frame="false" pagex="41.0155">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Общая схема расположения мест проведения работ при использовании лесов в 2019 году" htmlState="0" halign="4">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="12.1831" page="1" id="title" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="59.0389" y="12.1831" visibility="1" zValue="2" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="91.9223" outlineWidth="0.3" excludeFromExports="0" uuid="{8b6ac2c4-024d-4150-a98e-9a2aadf2a8c5}" height="12.2382" itemRotation="0" frame="false" pagex="59.0389">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Приложение 3&#xa;к лесной декларации" htmlState="0" halign="2">
+   <LabelFont description="MS Shell Dlg 2,8,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="1.3598" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="165.177" y="1.3598" visibility="1" zValue="1" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="42.9193" outlineWidth="0.3" excludeFromExports="0" uuid="{429aa643-f7c6-44ec-b4a1-2cb8d94d6dde}" height="10.8233" itemRotation="0" frame="false" pagex="165.177">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <customproperties/>
+ </Composition>
+</Composer>
