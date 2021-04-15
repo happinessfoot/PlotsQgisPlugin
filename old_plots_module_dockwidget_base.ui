@@ -279,17 +279,17 @@
         </item>
         <item row="4" column="3">
          <layout class="QGridLayout" name="gridLayout_9">
-          <item row="0" column="3">
-           <widget class="QPushButton" name="pushButton_reset">
-            <property name="text">
-             <string>Сброс</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="6">
+          <item row="0" column="4">
            <widget class="QPushButton" name="pushButton_draw">
             <property name="text">
              <string>Нарисовать</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="pushButton_addPoint">
+            <property name="text">
+             <string>Добавить точку</string>
             </property>
            </widget>
           </item>
@@ -306,20 +306,6 @@
             </property>
            </spacer>
           </item>
-          <item row="0" column="0">
-           <widget class="QPushButton" name="pushButton_addPoint">
-            <property name="text">
-             <string>Добавить точку</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="5">
-           <widget class="QPushButton" name="pushButton_loadPlot">
-            <property name="text">
-             <string>Загрузить выделенное</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="pushButton_deletePoint">
             <property name="text">
@@ -327,18 +313,12 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="4">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+          <item row="0" column="3">
+           <widget class="QPushButton" name="pushButton_loadPlot">
+            <property name="text">
+             <string>Загрузить выделенное</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+           </widget>
           </item>
          </layout>
         </item>
@@ -351,38 +331,13 @@
        <layout class="QGridLayout" name="gridLayout_11">
         <item row="0" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_8">
-          <item row="1" column="0" colspan="2">
-           <widget class="QGroupBox" name="groupBox_6">
+          <item row="0" column="0">
+           <widget class="QGroupBox" name="groupBox_4">
             <property name="title">
-             <string>GroupBox</string>
+             <string>Общая информация</string>
             </property>
-            <layout class="QGridLayout" name="gridLayout_17">
-             <item row="0" column="0">
-              <layout class="QGridLayout" name="gridLayout_14">
-               <item row="0" column="1">
-                <widget class="QComboBox" name="comboBox_typeOfCoords">
-                 <item>
-                  <property name="text">
-                   <string>Широта и долгота</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>X и Y</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>Координаты в виде:</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item row="1" column="0">
+            <layout class="QGridLayout" name="gridLayout_13">
+             <item row="2" column="0">
               <spacer name="verticalSpacer">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -395,22 +350,20 @@
                </property>
               </spacer>
              </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="pushButton_maket4">
-            <property name="text">
-             <string>Приложение 4</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QGroupBox" name="groupBox_4">
-            <property name="title">
-             <string>Общая информация</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_13">
+             <item row="1" column="0">
+              <widget class="QPushButton" name="pushButton_maket3">
+               <property name="text">
+                <string>Приложение 3</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QPushButton" name="pushButton_maket4">
+               <property name="text">
+                <string>Приложение 4</string>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="0" colspan="2">
               <layout class="QGridLayout" name="gridLayout_12">
                <item row="1" column="2">
@@ -456,13 +409,6 @@
               </layout>
              </item>
             </layout>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="pushButton_maket3">
-            <property name="text">
-             <string>Приложение 3</string>
-            </property>
            </widget>
           </item>
          </layout>
