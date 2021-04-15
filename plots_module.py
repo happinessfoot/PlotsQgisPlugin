@@ -2729,6 +2729,7 @@ class Draw(QgsMapToolEmitPoint,WorkWithTableAndPoints):
         self.equalAndNepPoints[1]=None
         self.lastNepPointNumber = 0
         self.dockwidget.checkBox_nep.setEnabled(True)
+        self.db.closeConnection()
         
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -3690,6 +3691,12 @@ class Plots(WorkWithTableAndPoints):
             plotNumber = ""
             area = "0.0"
             area_common = "0.0"
+            
+            maxPageHeight = 277
+            # leftMargin = 30
+            # upMargin = 10
+            
+            
             if(not self.db.openConnection()):
                 self.db.setConnectionInfo()
                 self.db.openConnection()
@@ -3704,7 +3711,7 @@ class Plots(WorkWithTableAndPoints):
             area_common = str(query.value(6))
             self.db.closeConnection()
             rectangle = selectedFeature.geometry().boundingBox()
-            newcomp.composition().setNumPages(2)
+            
             newcomp.composition().getComposerItemById("head").setText(u"Схема (ы) размещения лесосеки, объекта инфраструктуры,\nлесоперерабатывающей инфраструктуры и объекта, не \nсвязанного с созданием лесной инфраструктуры в "+self.dockwidget.lineEdit_yearMaket.text()+u" году")
             newcomp.composition().getComposerItemById("subjectName").setText(u""+self.dockwidget.lineEdit_nameSubject.text())
             newcomp.composition().getComposerItemById("foresty").setText(u""+foresty)
@@ -3720,7 +3727,7 @@ class Plots(WorkWithTableAndPoints):
             map = newcomp.composition().getComposerItemById("map")
             map.zoomToExtent(rectangle)
             map.setNewScale(25000)
-            style = "TABLE {font-family: MS Shell Dlg 2; font-size: 13pt;width: 270px;border-collapse: collapse;} \n TD { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n TD:first-child {width: 50px;} \n TD.length {width: 70px;}"
+            style = "body {margin:0;} TABLE {font-family: MS Shell Dlg 2; font-size: 13pt;width: 270px;border-collapse: collapse;} \n TD { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n TD:first-child {width: 50px;} \n TD.length {width: 70px;}"
             head = "<head> \n <meta charset=\"utf-8\"> \n <style type=\"text/css\"> \n "+style+" \n </style> \n </head>"
             if lenLinePoints>0:
                 lineTr1 = "<tr> \n <td colspan=\"3\">Привязка</td>  \n  </tr>   "
@@ -3731,22 +3738,28 @@ class Plots(WorkWithTableAndPoints):
             pointTr2 = ""
 
             rowCount = self.dockwidget.tableWidget_points.rowCount()
-
-            for i  in range(rowCount):
-                if(lenLinePoints>0):
-                    if(i<lenLinePoints-1) and i<2:
-                        lineTr1+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
-                    elif(i<lenLinePoints-1) and i>=2:
-                        lineTr2+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
-                    if i-(lenLinePoints-1)>=0 and i<2:
-                        pointTr1+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
-                    elif i-(lenLinePoints-1)>=0 and i>=2:
-                        pointTr2+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
-                else:
-                    if i<3:
-                        pointTr1+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
-                    else:
-                        pointTr2+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
+            pointTrArray = []
+            heightTables = []
+            positionTablesY = []
+            
+            coordTableData = []
+            coordHeightTableData = []
+            #coordTableData = []
+            # for i  in range(rowCount):
+                # if(lenLinePoints>0):
+                    # if(i<lenLinePoints-1) and i<2:
+                        # lineTr1+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
+                    # elif(i<lenLinePoints-1) and i>=2:
+                        # lineTr2+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
+                    # if i-(lenLinePoints-1)>=0 and i<2:
+                        # pointTr1+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
+                    # elif i-(lenLinePoints-1)>=0 and i>=2:
+                        # pointTr2+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
+                # else:
+                    # if i<3:
+                        # pointTr1+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
+                    # else:
+                        # pointTr2+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td>  \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr> "
                 
                 # if lenLinePoints>0:
                 # else:
@@ -3757,32 +3770,385 @@ class Plots(WorkWithTableAndPoints):
                 # if i > 3 and lenLinePoints>4
                 # else:
             #if lenLinePoints<4:
-            if(lenLinePoints>2):
-                pointTr2 = pointTr1+pointTr2
-                pointTr1 = ""
-            table_1=" <table> \n   <tr>  \n   <td>Площадь общая, га</td>  \n   <td>Площадь эксплуатационная, га</td> \n  </tr>  \n <tr>   \n  <td>"+area_common.encode()+"</td>  \n   <td>"+area.encode()+"</td>  \n  </tr> \n </table> \n <table>  \n  <tr>  \n   <td class=\"nomer\">№№</td>  \n   <td class=\"rumb\">Румбы</td>   \n  <td class=\"length\">Длина, м</td> \n   </tr> \n "+lineTr1+pointTr1+" \n </table>"
-            table_2="<table>"+lineTr2+pointTr2+"</table>"
+            
+            pointIdx = 0
+            yPositionTable = 10
+            tmpSumHeights = 0
+            pageCount = 1
+            
+            coordStyle = " <style type=\"text/css\"> \n body {margin:0;}\n TABLE {font-family: MS Shell Dlg 2; font-size: 13pt;width: 400px;border-collapse: collapse;} \n TH { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n TD { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n </style>"
+            coordHeader = "<head> \n <meta charset=\"utf-8\"> \n "+coordStyle+"  \n </head> \n"
+            
+            coordStringData = coordHeader+u"<body> \n <table> \n <tr> \n <th rowspan='2' width='50'><font size='2'>Номера характерных точек</font></th> \n <th colspan='2'>Координаты</th> \n </tr> \n  <tr> \n <th>Широта</th> \n <th>Долгота</th> \n </tr> \n"
+            if lenLinePoints>0:
+                coordStringData+=lineTr1.decode("UTF-8")
+            else:
+                coordStringData+=pointTr1.decode("UTF-8")
+            self.db.openConnection()
+            query = self.db.executeQuery(u"select distinct number::int,split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude from t_plot_point where plot_fk = '"+guid+u"' order by number")
+            #print u"select distinct number::int,split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude from t_plot_point where plot_fk = '"+guid+u"' order by number"
+            while(query.next()):
+                # if pointIdx<=7:
+                if lenLinePoints>0 and lenLinePoints-1-pointIdx==0:
+                    if pointIdx%7==0:
+                        coordTableData.append(coordStringData+"</table>\n</body>")
+                        coordStringData=coordHeader+"<body> \n <table> \n "+pointTr1.decode("UTF-8")
+                        pointIdx+=2
+                    else:
+                        coordStringData+=pointTr1.decode("UTF-8")
+                        pointIdx+=1
+                coordStringData += "<tr> \n <td width='50px'> " +str(query.value(0))+"</td> \n <td>"+str(query.value(1))+"</td> \n <td>"+str(query.value(2))+"</td> \n </tr>"
+                print "pointIdx:",pointIdx,"pointNumber:",str(query.value(0))
+                if (pointIdx>7 and pointIdx%7==0) or pointIdx==7:
+                    coordTableData.append(coordStringData+"</table>\n</body>")
+                    coordStringData=coordHeader+"<body> \n <table> \n "
+                pointIdx+=1
+            self.db.closeConnection()
+            print "pointIdx:",pointIdx
+            coordTableData.append(coordStringData+"</table>\n</body>")
+            nepStyle = u"<style> body {margin:0;} TABLE {font-family: MS Shell Dlg 2; font-size: 13pt;width: 270px;border-collapse: collapse;} \n TH { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n TD { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n  TD:first-child {width: 80px;}  \n TD.length {width: 78px;} \n </style>"
+            nepHeader = u"<head> \n <meta charset=\"utf-8\"> \n "+nepStyle+"  \n </head> \n"
+            nepTableData = {}
+            nepStringData = ""
+            nepAreaInfo = {}
+            
+            nepCoordStyle = u"<style type=\"text/css\"> \n body {margin:0;}\n TABLE {font-family: MS Shell Dlg 2; font-size: 13pt;width: 400px;border-collapse: collapse;} \n TH { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n TD { padding: 2px;border: 1px solid black;text-align: center; color: black; }  TD:first-child{width:72px} \n </style>"
+            nepCoordHeader = u"<head> \n <meta charset=\"utf-8\"> \n "+nepCoordStyle+"  \n </head> \n"
+            nepCoordTableData = {}
+            self.db.openConnection()
+            
+            nepHeightTable = {}
+            nepCoordsHeightTable = {}
+            nepCoordsTablePositionY = {}
+            nepFinalTable = {}
+            nepCoordsFinalTable = {}
+            nepIdx = 0
+            nepPartTable = 0
+            nepBindingLineRow = False
+            nepPolygonRow = False
+            
+            query = self.db.executeQuery(u"select t_non_operational_area.number as noa_number,t_non_operational_area.area,t_noa_rumbs.number as rumbNumber, t_noa_rumbs.rumb,t_noa_rumbs.distance,t_noa_rumbs.type,asd.pointNumber,asd.Latitude,asd.longitude  from ( select t_noa_point.number as pointNumber,split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude,noa,shape from (select * from (select row_number() over(partition by noa,number order by \"order\",type_object),* from t_noa_point order by noa,\"order\",type_object) as asd where row_number!=2) as t_noa_point) as asd inner join t_noa_rumbs on asd.pointNumber=split_part(t_noa_rumbs.number,'-',1) and t_noa_rumbs.noa = asd.noa inner join t_non_operational_area on  asd.noa = t_non_operational_area.primarykey where t_non_operational_area.plot = '"+guid+"'")
+            while(query.next()):
+                if int(query.value(0)) not in nepTableData.keys():
+                    nepTableData[query.value(0)]=[]
+                    nepAreaInfo[query.value(0)] = float(query.value(1))
+                    nepCoordTableData[query.value(0)]=[]
+                    nepBindingLineRow = False
+                    nepPolygonRow = False
+                if not nepPolygonRow and str(query.value(5))=='b6dcbdf5-0c43-4cbd-8742-166d59b89504':
+                    nepTableData[query.value(0)].append(pointTr1.decode("UTF-8"))
+                    nepCoordTableData[query.value(0)].append(pointTr1.decode("UTF-8"))
+                    nepPolygonRow=True
+                elif not nepBindingLineRow and str(query.value(5))=='5b8e90b5-df13-46b6-bf55-59146110dc28':
+                    nepTableData[query.value(0)].append("<tr> \n <td colspan=\"3\">Привязка</td>  \n  </tr>\n".decode("UTF-8"))
+                    nepCoordTableData[query.value(0)].append("<tr> \n <td colspan=\"3\">Привязка</td>  \n  </tr>\n".decode("UTF-8"))
+                    nepBindingLineRow=True
+                if self.dockwidget.radioButton_azimuth.isChecked():
+                    nepTableData[query.value(0)].append(u"<tr>\n<td width='71px'>"+str(query.value(2))+u"</td>\n<td>"+self.rumbToAzimuth(str(query.value(3)).replace('`','\''))+u"</td>\n<td class='length'>"+str(query.value(4))+u"</td>\n</tr>\n")
+                else:
+                    nepTableData[query.value(0)].append(u"<tr>\n<td width='71px'>"+str(query.value(2))+u"</td>\n<td>"+str(query.value(3)).replace('`','\'')+u"</td>\n<td class='length'>"+str(query.value(4))+u"</td>\n</tr>\n")
+                nepCoordTableData[query.value(0)].append(u"<tr>\n<td>"+str(query.value(6))+u"</td>\n<td>"+str(query.value(7))+u"</td>\n<td>"+str(query.value(8))+u"</td>\n</tr>\n")
+            self.db.closeConnection()
+            print "nepTableData:",nepTableData
+            print "nepCoordTableData:",nepCoordTableData
+            for key in nepTableData.keys():
+                nepFinalTable[key] = []
+                nepCoordsFinalTable[key] = []
+                nepHeightTable[key] = []
+                nepCoordsHeightTable[key] = []
+                nepCoordsTablePositionY[key] = []
+                nepPartTable = 0
+                for i in range(len(nepTableData[key])):
+                    #print "nepTableData["+str(key)+"]["+str(i)+"]"
+                    if nepPartTable == 0:
+                        nepFinalTable[key].append(nepHeader+u"<body>\n<table> \n <tr> \n <td>Площадь общая, га</td> \n <td colspan='2'>Площадь эксплуатационная, га</td> \n </tr> \n <tr> \n <td>123</td> \n <td colspan='2'>123</td>\n </tr>\n <tr>\n <th>№№</th>\n <th width='134px'>Румбы</th>\n <th width='100px'>Длина, м</th>\n </tr> \n")
+                        nepCoordsFinalTable[key].append(nepCoordHeader.replace(u'TD:first-child{width:72px}',u'')+u"<body>\n<table> \n  <tr> \n <th rowspan='2' width='50'><font size='2'>Номера характерных точек</font></th> \n <th colspan='2'>Координаты</th> \n </tr> \n  <tr> \n <th>Широта</th> \n <th>Долгота</th> \n </tr> ")
+                        nepHeightTable[key].append(23.1)
+                        nepCoordsHeightTable[key].append(13)
+                        nepPartTable +=1
+                    nepFinalTable[key][nepPartTable-1]+=nepTableData[key][i]
+                    nepCoordsFinalTable[key][nepPartTable-1]+=nepCoordTableData[key][i]
+                    nepHeightTable[key][nepPartTable-1]+=6.24
+                    nepCoordsHeightTable[key][nepPartTable-1]+=6.24
+                    if i!=0 and i%6==0:
+                        nepFinalTable[key][nepPartTable-1] += u"</table>\n</body>"
+                        nepFinalTable[key].append(nepHeader.replace(u'TD:first-child {width: 80px;}',u'TD:first-child {width: 73px;}')+u"<body>\n<table>")
+                        nepCoordsFinalTable[key].append(nepCoordHeader+"<body>\n<table>")
+                        nepHeightTable[key].append(0)
+                        nepCoordsHeightTable[key].append(0)
+                        nepPartTable+=1
+                if (len(nepTableData[key])-1)%6!=0:
+                    nepFinalTable[key][nepPartTable-1] += u"</table>\n</body>"    
+            #print "nepFinalTable: ",nepFinalTable        
+                    
+            rowInTable = 0
+            print "lenLinePoints",lenLinePoints
+            bindingLineFinish = False
+            k = 0
+            j = 0
+            pointsString = ""
+            
+            while k<rowCount:
+                # print "k-lenLinePoints-1:",lenLinePoints-1-k
+                if k<=7:
+                    if lenLinePoints>0 and lenLinePoints-1-k==0:
+                        # print "K:",k
+                        if k==7:
+                            pointTrArray.append(head+"\n <body> \n <table> \n"+pointTr1)
+                            heightTables.append(6.24)
+                            positionTablesY.append(yPositionTable)
+                            rowInTable+=1
+                            pageCount+=1
+                        elif k<7:
+                            pointsString+=pointTr1
+                    if len(pointTrArray)>0:
+                        pointTrArray[j]+= "<tr> \n <td>"+self.dockwidget.tableWidget_points.item(k,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(k,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(k,2).text().encode("utf-8")+"</td> \n </tr>"
+                        heightTables[j]+=6.24
+                        rowInTable+=1
+                    else:
+                        if lenLinePoints>0 and k-lenLinePoints-1>0 and k==7:
+                            if k==7:
+                                pointTrArray.append(head+"\n <body> \n <table> \n")
+                                heightTables.append(0.0)
+                                positionTablesY.append(yPositionTable)
+                                pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(k,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(k,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(k,2).text().encode("utf-8")+"</td> \n </tr>"
+                                heightTables[j]+=6.24
+                                rowInTable+=1
+                                pageCount+=1
+                        else:
+                            pointsString+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(k,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(k,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(k,2).text().encode("utf-8")+"</td> \n </tr>"
+                else:
+                    # print "pointTrArrayLENGTH:",len(pointTrArray)
+                    if len(pointTrArray)==0:
+                        pointTrArray.append(head+"\n <body> \n <table> \n")
+                        heightTables.append(0.0)
+                        positionTablesY.append(yPositionTable)
+                    if(lenLinePoints>0 and lenLinePoints-1-k==0):
+                        print "lenLinePoints-1-k:",lenLinePoints-1-k
+                        print "rowInTable:",rowInTable
+                        if rowInTable>0 and rowInTable%6==0:
+                            rowInTable = 0
+                            pointTrArray[j]+=" \n </table> \n </body> \n"
+                            yPositionTable+=42
+                            if(yPositionTable+42>maxPageHeight):
+                                yPositionTable=10
+                                pageCount+=1
+                            positionTablesY.append(yPositionTable)
+                            pointTrArray.append(head+"\n <body> \n <table> \n"+pointTr1)
+                            heightTables.append(6.24)
+                            j+=1
+                            rowInTable+=1
+                        else:
+                            pointTrArray[j]+=pointTr1
+                            rowInTable+=1
+                            heightTables[j]+=6.24
+                            
+                        
+                    if rowInTable>0 and (rowInTable)%6==0:
+                        pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(k,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(k,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(k,2).text().encode("utf-8")+"</td> \n </tr>"
+                        pointTrArray[j]+=" \n </table> \n </body> \n"
+                        yPositionTable+=42
+                        heightTables[j]+=6.24
+                        #чтобы не рисовалась лишняя таблица
+                        if k<rowCount-1:
+                            pointTrArray.append(head+"\n <body> \n <table> \n")
+                            heightTables.append(0.0)
+                            if(yPositionTable+42>maxPageHeight):
+                                yPositionTable=10
+                                pageCount+=1
+                            positionTablesY.append(yPositionTable)
+                            j+=1
+                        rowInTable=0
+                    else:
+                        pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(k,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(k,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(k,2).text().encode("utf-8")+"</td> \n </tr>"
+                        heightTables[j]+=6.24
+                        rowInTable+=1
+                        
+                k+=1
+            # if((rowCount>3 and lenLinePoints==0) or (lenLinePoints>0 and rowCount>2)):
+                # for i in range(rowCount):
+                    # if lenLinePoints==0 and i<=7:
+                        # pointTr1+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                        # if(i==7 and i<rowCount):
+                            # pointTrArray.append(head+"\n <body> \n <table> \n")
+                            # heightTables.append(0.0)
+                            # positionTablesY.append(yPositionTable)
+                            # yPositionTable+=42
+                            # pageCount+=1
+                    # elif lenLinePoints==0 and i>7:
+                        # #print str(len(pointTrArray)),"/",str(float(i)/float(7))
+                       # #print "rowCount",str(rowCount)
+                        # #print "float",float(float(i)/float(7))%1
+                        # #print "i/7",i/7
+                        # if(float(float(i)/float(7))%1==0 and len(pointTrArray)==(i/7)-1):
+                            # pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                            # pointTrArray[j]+=" \n </table> \n </body> \n"
+                            # heightTables[j]+=6.24
+                            # tmpSumHeights+=6.24
+                            # if i<rowCount-1:
+                                # heightTables.append(0.0)
+                                # pointTrArray.append(head+"\n <body> \n <table> \n")
+                                # if(yPositionTable+42>maxPageHeight):
+                                    # yPositionTable = 10
+                                # positionTablesY.append(yPositionTable)
+                                # yPositionTable+=42
+                                # if (tmpSumHeights+43.68)>maxPageHeight:
+                                    # pageCount+=1
+                                # j+=1
+                        # else:
+                            # tmpSumHeights+=6.24
+                            # heightTables[j]+=6.24
+                            # pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                    # elif lenLinePoints>0 and i<=7:
+                        # #print "I",str(i)
+                        # #print "lenLinePoints:",lenLinePoints-1
+                        # if i<lenLinePoints-1:
+                            # lineTr1 += "<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                        # else:
+                            # if i<6:
+                                # pointTr1+= "<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                            # elif i == 7:
+                                # bindingLineFinish = True
+                                # pointTrArray.append(head+"\n <body> \n <table> \n")
+                                
+                                # pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i-1,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i-1,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i-1,2).text().encode("utf-8")+"</td> \n </tr>"
+                                # heightTables.append(0.0)
+                                # positionTablesY.append(yPositionTable)
+                                # pageCount+=1
+                    # elif lenLinePoints>0 and i>7:
+                        # print "J:",str(j)
+                        # #pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                        # if i-lenLinePoints==0:
+                            # pointTrArray[j]="<tr> \n <td colspan=\"3\">Лесосека</td> \n </tr>  "+pointTrArray[j]
+                            # heightTables[j]+=6.24
+                            # tmpSumHeights+=6.24
+                            # rowInTable+=1
+                        # if (rowInTable-1)%7==0:
+                            # pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                            # pointTrArray[j]+=" \n </table> \n </body> \n"
+                            # heightTables[j]+=6.24
+                            # tmpSumHeights+=6.24
+                            # pointTrArray.append(head+"\n <body> \n <table> \n")
+                            # heightTables.append(0.0)
+                            # if(yPositionTable+42>maxPageHeight):
+                                # yPositionTable = 10
+                            # positionTablesY.append(yPositionTable)
+                            # yPositionTable+=42
+                            # if (tmpSumHeights+43.68)>maxPageHeight:
+                                    # pageCount+=1                            
+                            # j+=1
+                            # rowInTable=0
+                        # else:
+                            # pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td width='134px'>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+                            # heightTables[j]+=6.24
+                            # tmpSumHeights+=6.24
+                            # rowInTable+=1
+                        
+                        
+                            
+                            
+                                
+            #pointTrArray[j]+="<tr> \n <td>"+self.dockwidget.tableWidget_points.item(i,0).text().encode()+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,3).text().encode("utf-8")+"</td> \n <td>"+self.dockwidget.tableWidget_points.item(i,2).text().encode("utf-8")+"</td> \n </tr>"
+            #pointTrArray[j]+=" \n </table> \n </body> \n"  
+            # if(lenLinePoints>2):
+                # pointTr2 = pointTr1+pointTr2
+                # pointTr1 = ""
+            if lenLinePoints>0:
+                table_1=" <table> \n   <tr>  \n   <td>Площадь общая, га</td>  \n   <td>Площадь эксплуатационная, га</td> \n  </tr>  \n <tr>   \n  <td>"+area.encode()+"</td>  \n   <td>"+area_common.encode()+"</td>  \n  </tr> \n </table> \n <table>  \n  <tr>  \n   <td class=\"nomer\">№№</td>  \n   <td class=\"rumb\">Румбы</td>   \n  <td class=\"length\">Длина, м</td> \n   </tr> \n "+lineTr1+pointsString+" \n </table>"
+            else:
+                table_1=" <table> \n   <tr>  \n   <td>Площадь общая, га</td>  \n   <td>Площадь эксплуатационная, га</td> \n  </tr>  \n <tr>   \n  <td>"+area.encode()+"</td>  \n   <td>"+area_common.encode()+"</td>  \n  </tr> \n </table> \n <table>  \n  <tr>  \n   <td class=\"nomer\">№№</td>  \n   <td class=\"rumb\">Румбы</td>   \n  <td class=\"length\">Длина, м</td> \n   </tr> \n "+pointTr1+pointsString+" \n </table>"
+            
+                #table_2="<table>"+lineTr2+pointTr2"</table>"
             body1 = head+" \n <body> \n "+table_1+" \n </body> \n"
-            body2 = head+"\n <body> \n "+table_2+" \n </body> \n"
+            body2 = coordTableData[0]
             html_item = newcomp.composition().getComposerItemById("table_1")
             composer_html  = newcomp.composition().getComposerHtmlByItem(html_item)
             composer_html.setHtml(body1.decode("utf-8"))
             composer_html.loadHtml()
             
+            newcomp.composition().setNumPages(pageCount)
+            pageNumber = 1
+            lastItemPositionY = 0
+            print "coordTableData:",str(len(coordTableData))
+            print "pointTrArray:",str(len(pointTrArray))
+            print coordTableData
+            for i in range(len(pointTrArray)):
+                #print "positionTablesY[j]",i,positionTablesY[i]
+                #tmpSumHeights+=heightTables[i]
+                rumb_plots_html = QgsComposerHtml(newcomp.composition(),False)
+                rumb_plots_composerFrame = QgsComposerFrame(newcomp.composition(),rumb_plots_html,0,0,65,heightTables[i])
+                rumb_plots_html.addFrame(rumb_plots_composerFrame)
+                rumb_plots_composerFrame.setId("plot_table_"+str(i))
+                if(positionTablesY[i]==10):
+                    print "positionTablesY[i]+42:",str(positionTablesY[i])
+                    pageNumber+=1
+                rumb_plots_composerFrame.setItemPosition(30,positionTablesY[i],page=pageNumber)
+                rumb_plots_html.setContentMode(1)
+                rumb_plots_html.setHtml(pointTrArray[i].decode("utf-8"))
+                rumb_plots_html.loadHtml()
+                
+                if i+1<len(coordTableData):
+                    coords_plots_html = QgsComposerHtml(newcomp.composition(),False)
+                    coords_plots_composerFrame = QgsComposerFrame(newcomp.composition(),coords_plots_html,0,0,96,heightTables[i])
+                    coords_plots_html.addFrame(coords_plots_composerFrame)
+                    coords_plots_composerFrame.setId("coord_plot_table_"+str(i))
+                    coords_plots_composerFrame.setItemPosition(100,positionTablesY[i],page=pageNumber)
+                    coords_plots_html.setContentMode(1)
+                    coords_plots_html.setHtml(coordTableData[i+1])
+                    coords_plots_html.loadHtml()
+                lastItemPositionY = positionTablesY[i]+heightTables[i]
+                
             
-            tmp_html = QgsComposerHtml(newcomp.composition(),False)
-            tmp_composerFrame = QgsComposerFrame(newcomp.composition(),tmp_html,0,0,100,100)
-            tmp_html.addFrame(tmp_composerFrame)
-            tmp_composerFrame.setId("tmp_html_item")
-            tmp_composerFrame.setItemPosition(0,0,page=2)
-            tmp_html.setContentMode(1)
-            tmp_html.setHtml("<h1>testtest")
-            tmp_html.loadHtml()
+            for key in nepFinalTable.keys():
+                
+                if(len(nepHeightTable[key])>0 and (lastItemPositionY+5.5+nepHeightTable[key][0])>maxPageHeight):
+                    pageNumber +=1
+                    lastItemPositionY = 10
+                nep_label = QgsComposerLabel(newcomp.composition())
+                nep_label.setFont(QFont("Times",14))
+                nep_label.setItemPosition(30,lastItemPositionY,64.797,5.5,page=pageNumber)
+                nep_label.setVAlign(Qt.AlignVCenter)
+                nep_label.setHAlign(Qt.AlignRight)
+                nep_label.setId("nep_"+str(key)+"_label")
+                nep_label.setText(u"НЭП №"+str(key)+"")
+                lastItemPositionY+=5.5
+                newcomp.composition().addComposerLabel(nep_label)
+                for i in range(len(nepFinalTable[key])):
+                    rumb_nep_html = QgsComposerHtml(newcomp.composition(),False)
+                    rumb_nep_composerFrame = QgsComposerFrame(newcomp.composition(),rumb_nep_html,0,0,65,nepHeightTable[key][i])
+                    rumb_nep_html.addFrame(rumb_nep_composerFrame)
+                    rumb_nep_composerFrame.setId("nep_"+str(key)+"_table_"+str(i))
+                    if(i!=0):
+                        lastItemPositionY-=0
+                    if (lastItemPositionY+nepHeightTable[key][i]>maxPageHeight):
+                        pageNumber +=1
+                        lastItemPositionY = 10
+                    rumb_nep_composerFrame.setItemPosition(30,lastItemPositionY,page=pageNumber)
+                    rumb_nep_html.setContentMode(1)
+                    rumb_nep_html.setHtml(nepFinalTable[key][i])
+                    rumb_nep_html.loadHtml()
+
+                    coords_nep_html = QgsComposerHtml(newcomp.composition(),False)
+                    coords_nep_composerFrame = QgsComposerFrame(newcomp.composition(),coords_nep_html,0,0,96,nepCoordsHeightTable[key][i])
+                    coords_nep_html.addFrame(coords_nep_composerFrame)
+                    coords_nep_composerFrame.setId("nep_coords_"+str(key)+"_table_"+str(i))
+                    if(i!=0):
+                        coords_nep_composerFrame.setItemPosition(100,lastItemPositionY,page=pageNumber)
+                    else:
+                        coords_nep_composerFrame.setItemPosition(100,lastItemPositionY,page=pageNumber)
+                    coords_nep_html.setContentMode(1)
+                    coords_nep_html.setHtml(nepCoordsFinalTable[key][i])
+                    coords_nep_html.loadHtml()
+
+                    lastItemPositionY+=nepHeightTable[key][i]
+                    
             
+            
+            #print str(tmpSumHeights+20)
             
             #newcomp.composition().addComposerHtmlFrame(tmp_html,None)
             
-            print tmp_html.frameCount()
+            #print tmp_html.frameCount()
 
             #newcomp.composition().addComposerHtmlFrame(tmp_html,tmp_composerFrame)
             
@@ -3791,8 +4157,25 @@ class Plots(WorkWithTableAndPoints):
             
             html_item2 = newcomp.composition().getComposerItemById("table_2")
             composer_html2  = newcomp.composition().getComposerHtmlByItem(html_item2)
-            composer_html2.setHtml(body2.decode("utf-8"))
+            composer_html2.setHtml(body2)
             composer_html2.loadHtml()
+            
+            print "lastItemPositionY:",lastItemPositionY
+            print "maxPageHeight:",maxPageHeight
+            if((lastItemPositionY+40.45)>maxPageHeight):
+                lastItemPositionY=10
+                pageNumber+=1
+            if(pageCount<pageNumber):
+                newcomp.composition().setNumPages(pageNumber)
+                pageCount=pageNumber
+            newcomp.composition().getComposerItemById("acceptLabel").setItemPosition(30,lastItemPositionY,page=pageNumber)
+            newcomp.composition().getComposerItemById("signOrg").setItemPosition(30,lastItemPositionY+13.5,page=pageNumber)
+            newcomp.composition().getComposerItemById("signName").setItemPosition(111,lastItemPositionY+13.5,page=pageNumber)
+            newcomp.composition().getComposerItemById("signUnderline").setItemPosition(30,lastItemPositionY+13.5+8.5-2.9,page=pageNumber)
+            newcomp.composition().getComposerItemById("signLabel").setItemPosition(50,lastItemPositionY+13.5+8.5+2.6,page=pageNumber)
+            newcomp.composition().getComposerItemById("dateLabel").setItemPosition(30,lastItemPositionY+28.6,page=pageNumber)
+            
+            
            # addComposerHtmlFrame
             ###print lineTr1,pointTr1
             newcomp.composerWindow().show()
