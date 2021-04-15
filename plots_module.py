@@ -3631,6 +3631,7 @@ class Plots(WorkWithTableAndPoints):
                 self.dockwidget.pushButton_clearTrash.clicked.connect(self.clearTrashClicked)
                 self.dockwidget.pushButton_maket3.clicked.connect(self.maketThreeClick)
                 self.dockwidget.pushButton_maket4.clicked.connect(self.maketFourClick)
+                self.dockwidget.pushButton_reset.clicked.connect(self.pushButton_reset_click)
                 # connect to provide cleanup on closing of dockwidget
                 self.dockwidget.closingPlugin.connect(self.onClosePlugin)
 
@@ -3665,6 +3666,8 @@ class Plots(WorkWithTableAndPoints):
             self.checkLayer = True
         self.canvas.setMapTool(self.tool_draw)
         ####print "bands: ",len(rubberBands),"\n annot: ",len(annotationItems)
+    def pushButton_reset_click(self):
+        self.tool_draw.resetAll()
     def maketFourClick(self):
         dirname=os.path.dirname(__file__)
         ##print "os.path.dirname",os.path.dirname(__file__)
@@ -3736,7 +3739,8 @@ class Plots(WorkWithTableAndPoints):
             lineTr2 = ""
             pointTr1 = "<tr> \n <td colspan=\"3\">Лесосека</td> \n </tr>  "
             pointTr2 = ""
-
+            coordRow=u""
+            coordsType=u""
             rowCount = self.dockwidget.tableWidget_points.rowCount()
             pointTrArray = []
             heightTables = []
@@ -3779,13 +3783,24 @@ class Plots(WorkWithTableAndPoints):
             coordStyle = " <style type=\"text/css\"> \n body {margin:0;}\n TABLE {font-family: MS Shell Dlg 2; font-size: 13pt;width: 400px;border-collapse: collapse;} \n TH { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n TD { padding: 2px;border: 1px solid black;text-align: center; color: black; } \n </style>"
             coordHeader = "<head> \n <meta charset=\"utf-8\"> \n "+coordStyle+"  \n </head> \n"
             
-            coordStringData = coordHeader+u"<body> \n <table> \n <tr> \n <th rowspan='2' width='50'><font size='2'>Номера характерных точек</font></th> \n <th colspan='2'>Координаты</th> \n </tr> \n  <tr> \n <th>Широта</th> \n <th>Долгота</th> \n </tr> \n"
+            if self.dockwidget.comboBox_typeOfCoords.currentIndex() == 0:
+                coordRow = u" <tr> \n <th>Широта</th> \n <th>Долгота</th> \n </tr> \n"
+            elif self.dockwidget.comboBox_typeOfCoords.currentIndex() == 1:
+                coordRow = u" <tr> \n <th>X</th> \n <th>Y</th> \n </tr> \n"
+                
+            coordStringData = coordHeader+u"<body> \n <table> \n <tr> \n <th rowspan='2' width='50'><font size='2'>Номера характерных точек</font></th> \n <th colspan='2'>Координаты</th> \n </tr> \n "+coordRow
             if lenLinePoints>0:
                 coordStringData+=lineTr1.decode("UTF-8")
             else:
                 coordStringData+=pointTr1.decode("UTF-8")
             self.db.openConnection()
-            query = self.db.executeQuery(u"select distinct number::int,split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude from t_plot_point where plot_fk = '"+guid+u"' order by number")
+            if self.dockwidget.comboBox_typeOfCoords.currentIndex() == 0:
+                coordsType = u"split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude"
+            elif self.dockwidget.comboBox_typeOfCoords.currentIndex() == 1:
+                coordsType = u"ST_X(st_transform(shape,4326))::numeric(28,5) as X, ST_Y(st_transform(shape,4326))::numeric(28,5) as Y"
+            query = self.db.executeQuery(u"select distinct number::int,"+coordsType+" from t_plot_point where plot_fk = '"+guid+u"' order by number")
+            print "QUERYPLOT:",u"select distinct number::int,"+coordsType+" from t_plot_point where plot_fk = '"+guid+u"' order by number"
+            
             #print u"select distinct number::int,split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude from t_plot_point where plot_fk = '"+guid+u"' order by number"
             while(query.next()):
                 # if pointIdx<=7:
@@ -3826,8 +3841,13 @@ class Plots(WorkWithTableAndPoints):
             nepPartTable = 0
             nepBindingLineRow = False
             nepPolygonRow = False
-            
-            query = self.db.executeQuery(u"select t_non_operational_area.number as noa_number,t_non_operational_area.area,t_noa_rumbs.number as rumbNumber, t_noa_rumbs.rumb,t_noa_rumbs.distance,t_noa_rumbs.type,asd.pointNumber,asd.Latitude,asd.longitude  from ( select t_noa_point.number as pointNumber,split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude,noa,shape from (select * from (select row_number() over(partition by noa,number order by \"order\",type_object),* from t_noa_point order by noa,\"order\",type_object) as asd where row_number!=2) as t_noa_point) as asd inner join t_noa_rumbs on asd.pointNumber=split_part(t_noa_rumbs.number,'-',1) and t_noa_rumbs.noa = asd.noa inner join t_non_operational_area on  asd.noa = t_non_operational_area.primarykey where t_non_operational_area.plot = '"+guid+"'")
+            if self.dockwidget.comboBox_typeOfCoords.currentIndex() == 0:
+                coordRow = u"<tr> \n <th>Широта</th> \n <th>Долгота</th> \n </tr>"
+                coordsType = u"split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude_X, trim(split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude_Y"
+            elif self.dockwidget.comboBox_typeOfCoords.currentIndex() == 1:
+                coordRow = u"<tr> \n <th>X</th> \n <th>Y</th> \n </tr>"
+                coordsType = u"ST_X(st_transform(shape,4326))::numeric(28,5) as Latitude_X, ST_Y(st_transform(shape,4326))::numeric(28,5) as longitude_Y"
+            query = self.db.executeQuery(u"select t_non_operational_area.number as noa_number,t_non_operational_area.area,t_noa_rumbs.number as rumbNumber, t_noa_rumbs.rumb,t_noa_rumbs.distance,t_noa_rumbs.type,asd.pointNumber,asd.Latitude_X,asd.longitude_Y  from ( select t_noa_point.number as pointNumber,"+coordsType+",noa,shape from (select * from (select row_number() over(partition by noa,number order by \"order\",type_object),* from t_noa_point order by noa,\"order\",type_object) as asd where row_number!=2) as t_noa_point) as asd inner join t_noa_rumbs on asd.pointNumber=split_part(t_noa_rumbs.number,'-',1) and t_noa_rumbs.noa = asd.noa inner join t_non_operational_area on  asd.noa = t_non_operational_area.primarykey where t_non_operational_area.plot = '"+guid+"'")
             while(query.next()):
                 if int(query.value(0)) not in nepTableData.keys():
                     nepTableData[query.value(0)]=[]
@@ -3862,7 +3882,7 @@ class Plots(WorkWithTableAndPoints):
                     #print "nepTableData["+str(key)+"]["+str(i)+"]"
                     if nepPartTable == 0:
                         nepFinalTable[key].append(nepHeader+u"<body>\n<table> \n <tr> \n <td>Площадь общая, га</td> \n <td colspan='2'>Площадь эксплуатационная, га</td> \n </tr> \n <tr> \n <td>123</td> \n <td colspan='2'>123</td>\n </tr>\n <tr>\n <th>№№</th>\n <th width='134px'>Румбы</th>\n <th width='100px'>Длина, м</th>\n </tr> \n")
-                        nepCoordsFinalTable[key].append(nepCoordHeader.replace(u'TD:first-child{width:72px}',u'')+u"<body>\n<table> \n  <tr> \n <th rowspan='2' width='50'><font size='2'>Номера характерных точек</font></th> \n <th colspan='2'>Координаты</th> \n </tr> \n  <tr> \n <th>Широта</th> \n <th>Долгота</th> \n </tr> ")
+                        nepCoordsFinalTable[key].append(nepCoordHeader.replace(u'TD:first-child{width:72px}',u'')+u"<body>\n<table> \n  <tr> \n <th rowspan='2' width='50'><font size='2'>Номера характерных точек</font></th> \n <th colspan='2'>Координаты</th> \n </tr> \n   "+coordRow)
                         nepHeightTable[key].append(23.1)
                         nepCoordsHeightTable[key].append(13)
                         nepPartTable +=1
