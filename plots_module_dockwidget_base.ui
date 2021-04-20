@@ -244,6 +244,9 @@
                  <verstretch>2</verstretch>
                 </sizepolicy>
                </property>
+               <property name="contextMenuPolicy">
+                <enum>Qt::CustomContextMenu</enum>
+               </property>
                <column>
                 <property name="text">
                  <string>Точки</string>

@@ -32,6 +32,8 @@ from math import cos, sin,radians,degrees, pi,ceil,sqrt
 import collections
 import uuid
 import re
+import os
+import time
 # Initialize Qt resources from file resources.py
 import resources
 
@@ -3632,6 +3634,7 @@ class Plots(WorkWithTableAndPoints):
                 self.dockwidget.pushButton_maket3.clicked.connect(self.maketThreeClick)
                 self.dockwidget.pushButton_maket4.clicked.connect(self.maketFourClick)
                 self.dockwidget.pushButton_reset.clicked.connect(self.pushButton_reset_click)
+                self.dockwidget.tableWidget_points.customContextMenuRequested.connect(self.tableContextMenuShow)
                 # connect to provide cleanup on closing of dockwidget
                 self.dockwidget.closingPlugin.connect(self.onClosePlugin)
 
@@ -3666,6 +3669,308 @@ class Plots(WorkWithTableAndPoints):
             self.checkLayer = True
         self.canvas.setMapTool(self.tool_draw)
         ####print "bands: ",len(rubberBands),"\n annot: ",len(annotationItems)
+    
+    def tableContextMenuShow(self,e):
+        menu = QMenu(self.dockwidget)
+        menu.addAction(u"Импортировать точки").triggered.connect(self.importRumbPoints)
+        menu.addAction(u"Импортировать координаты").triggered.connect(self.importCoordsPoints)
+        if self.tool_draw.getGuidPlot():
+            menu.addAction(u"Импортировать Румбы НЭП").triggered.connect(self.importAllNepsRumbs)
+            menu.addAction(u"Импортировать координаты НЭП").triggered.connect(self.importAllNepsCoords)
+        menu.exec_(QCursor.pos())
+        
+    def importAllNepsCoords(self):
+        plotGuid = self.tool_draw.getGuidPlot()
+        neps = {}
+        if (not self.db.openConnection()):
+            self.db.openConnection()
+        query = self.db.executeQuery(u"select f1.name,f2.name,t_forestquarter.number,t_plot.number,t_non_operational_area.number,t_plot.area_common,t_non_operational_area.area,t_non_operational_area.mangle,t_non_operational_area.primarykey from t_non_operational_area inner join t_plot on t_plot.primarykey =  t_non_operational_area.plot inner join t_forestquarter on t_plot.forestquarter=t_forestquarter.primarykey inner join t_foresty as f2 on t_forestquarter.forestdistrict = f2.primarykey inner join t_foresty as f1 on f1.primarykey =  f2.hierarchy where t_non_operational_area.plot = '"+plotGuid+"' order by f1.name,f2.name,t_forestquarter.number,t_non_operational_area.number")
+        while(query.next()):
+            nepGuid = str(query.value(8))
+            neps[nepGuid] = []
+            neps[nepGuid].append(str(query.value(0)))
+            neps[nepGuid].append(str(query.value(1)))
+            neps[nepGuid].append(str(query.value(2)))
+            neps[nepGuid].append(str(query.value(3)))
+            neps[nepGuid].append(str(query.value(4)))
+            neps[nepGuid].append(str(query.value(5)))
+            neps[nepGuid].append(str(query.value(6)))
+            neps[nepGuid].append(str(query.value(7)))
+        self.db.closeConnection()
+        
+        userFolder = os.path.expanduser('~')
+        documentsFolder = os.path.join(userFolder,'Documents')
+        importFolder = os.path.join(documentsFolder,u'Делянки')
+        if not os.path.exists(importFolder):
+            os.makedirs(importFolder)
+        files = ""
+        self.db.openConnection()
+        for key in neps.keys():
+            rowBindingLine = False
+            rowPolygon = False
+            fileName = importFolder+u'\\НЭП_координаты_'+str(time.clock())+u'.csv'
+            files += fileName+"\n"
+            f = open(fileName,'w')
+            f.write("Лесничество:"+neps[key][0].encode('utf-8')+";\n")
+            f.write("Уч. Лесничество:"+neps[key][1].encode('utf-8')+";\n")
+            f.write("Номер квартала:"+neps[key][2].encode('utf-8')+";\n")
+            f.write("Номер лесосеки:"+neps[key][3].encode('utf-8')+";\n")
+            f.write("Номер НЭП:"+neps[key][4].encode('utf-8')+";\n")
+            f.write("Площадь общая:"+neps[key][5].encode('utf-8')+";\n")
+            f.write("Площадь Не эксплуатационная"+neps[key][6].encode('utf-8')+";\n")
+            f.write("Магнитное склонение:"+neps[key][7].encode('utf-8')+";\n")
+            f.write("№№;Широта;Долгота;X;Y;\n")
+            
+            query = self.db.executeQuery(u"select asd.pointNumber,asd.Latitude,asd.longitude,st_x(st_transform(asd.shape,4326)),st_y(st_transform( asd.shape,4326)),t_noa_rumbs.type from ( select t_noa_point.number as pointNumber, split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude,noa,t_noa_point.shape from (select * from (select row_number() over(partition by noa,number order by \"order\",type_object),* from t_noa_point order by noa,\"order\") as asd where row_number!=2) as t_noa_point) as asd inner join t_noa_rumbs on asd.pointNumber=split_part(t_noa_rumbs.number,'-',1) and t_noa_rumbs.noa = asd.noa inner join t_non_operational_area on  asd.noa = t_non_operational_area.primarykey where t_non_operational_area.primarykey = '"+key+"'")
+            while(query.next()):
+                if str(query.value(5))=='5b8e90b5-df13-46b6-bf55-59146110dc28' and not rowBindingLine:
+                    rowBindingLine=True
+                    f.write(" ;Привязка; ;\n")
+                if str(query.value(5))=='b6dcbdf5-0c43-4cbd-8742-166d59b89504' and not rowPolygon:
+                    rowPolygon = True
+                    f.write(" ;Лесосека; ;\n")
+                f.write(str(query.value(0)).encode("utf-8")+";"+str(query.value(1)).encode("utf-8")+";"+str(query.value(2)).encode("utf-8")+";"+str(query.value(3)).encode("utf-8")+";"+str(query.value(4)).encode("utf-8")+";\n")
+            f.close()
+        self.db.closeConnection() 
+        QMessageBox.information(None,u"Импорт",u"Данные сохранены в файле:\n"+files)
+        
+    def importAllNepsRumbs(self):
+        plotGuid = self.tool_draw.getGuidPlot()
+        neps = {}
+        if (not self.db.openConnection()):
+            self.db.openConnection()
+        query = self.db.executeQuery(u"select f1.name,f2.name,t_forestquarter.number,t_plot.number,t_non_operational_area.number,t_plot.area_common,t_non_operational_area.area,t_non_operational_area.mangle,t_non_operational_area.primarykey from t_non_operational_area inner join t_plot on t_plot.primarykey =  t_non_operational_area.plot inner join t_forestquarter on t_plot.forestquarter=t_forestquarter.primarykey inner join t_foresty as f2 on t_forestquarter.forestdistrict = f2.primarykey inner join t_foresty as f1 on f1.primarykey =  f2.hierarchy where t_non_operational_area.plot = '"+plotGuid+"' order by f1.name,f2.name,t_forestquarter.number,t_non_operational_area.number")
+        while(query.next()):
+            nepGuid = str(query.value(8))
+            neps[nepGuid] = []
+            neps[nepGuid].append(str(query.value(0)))
+            neps[nepGuid].append(str(query.value(1)))
+            neps[nepGuid].append(str(query.value(2)))
+            neps[nepGuid].append(str(query.value(3)))
+            neps[nepGuid].append(str(query.value(4)))
+            neps[nepGuid].append(str(query.value(5)))
+            neps[nepGuid].append(str(query.value(6)))
+            neps[nepGuid].append(str(query.value(7)))
+        self.db.closeConnection()
+        
+        userFolder = os.path.expanduser('~')
+        documentsFolder = os.path.join(userFolder,'Documents')
+        importFolder = os.path.join(documentsFolder,u'Делянки')
+        if not os.path.exists(importFolder):
+            os.makedirs(importFolder)
+        files = ""
+        self.db.openConnection()
+        for key in neps.keys():
+            rowBindingLine = False
+            rowPolygon = False
+            fileName = importFolder+u'\\НЭП_румбы_'+str(time.clock())+u'.csv'
+            files += fileName+"\n"
+            f = open(fileName,'w')
+            f.write("Лесничество:"+neps[key][0].encode('utf-8')+";\n")
+            f.write("Уч. Лесничество:"+neps[key][1].encode('utf-8')+";\n")
+            f.write("Номер квартала:"+neps[key][2].encode('utf-8')+";\n")
+            f.write("Номер лесосеки:"+neps[key][3].encode('utf-8')+";\n")
+            f.write("Номер НЭП:"+neps[key][4].encode('utf-8')+";\n")
+            f.write("Площадь общая:"+neps[key][5].encode('utf-8')+";\n")
+            f.write("Площадь Не эксплуатационная"+neps[key][6].encode('utf-8')+";\n")
+            f.write("Магнитное склонение:"+neps[key][7].encode('utf-8')+";\n")
+            f.write("№№;Румбы(Азимуты);Длина, м.;\n")
+            
+            query = self.db.executeQuery(u"select t_noa_rumbs.number,t_noa_rumbs.rumb,t_noa_rumbs.distance,t_noa_rumbs.type from ( select t_noa_point.number as pointNumber,split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude,trim(split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude,	noa,t_noa_point.shape from (select * from (select row_number() over(partition by noa,number order by \"order\",type_object),* from t_noa_point order by noa,\"order\") as asd where row_number!=2 ) as t_noa_point ) as asd inner join t_noa_rumbs on asd.pointNumber=split_part(t_noa_rumbs.number,'-',1) and t_noa_rumbs.noa = asd.noa inner join t_non_operational_area on  asd.noa = t_non_operational_area.primarykey where t_non_operational_area.primarykey = '"+key+"'")
+            while(query.next()):
+                if str(query.value(3))=='5b8e90b5-df13-46b6-bf55-59146110dc28' and not rowBindingLine:
+                    rowBindingLine=True
+                    f.write(" ;Привязка; ;\n")
+                if str(query.value(3))=='b6dcbdf5-0c43-4cbd-8742-166d59b89504' and not rowPolygon:
+                    rowPolygon = True
+                    f.write(" ;Лесосека; ;\n")
+                if self.dockwidget.radioButton_azimuth.isChecked():
+                    f.write(str(query.value(0)).encode("utf-8")+";"+self.rumbToAzimuth(str(query.value(1)).replace('`','\'')).encode("utf-8")+";"+str(query.value(2)).encode("utf-8")+";\n")
+                else:
+                    f.write(str(query.value(0)).encode("utf-8")+";"+str(query.value(1)).encode("utf-8")+";"+str(query.value(2)).encode("utf-8")+";\n")
+            f.close()
+        self.db.closeConnection() 
+        QMessageBox.information(None,u"Импорт",u"Данные сохранены в файле:\n"+files)
+    
+    def importRumbPoints(self):
+        rowCount = self.dockwidget.tableWidget_points.rowCount()
+        plotGuid = self.tool_draw.getGuidPlot()
+        nepGuid = self.tool_draw.getNepGuid()
+        lenLinePoints = len(self.tool_draw.getLinePoints())
+        if (rowCount>0):
+            userFolder = os.path.expanduser('~')
+            documentsFolder = os.path.join(userFolder,'Documents')
+            importFolder = os.path.join(documentsFolder,u'Делянки')
+            if not os.path.exists(importFolder):
+                os.makedirs(importFolder)
+
+            rowBindingLine = False
+            rowPolygon = False
+            #print  "forestyName",forestyName.encode('utf-8')
+            if plotGuid:
+                if (not self.db.openConnection()):
+                        self.db.openConnection()
+                query = self.db.executeQuery(u"select f1.name,f2.name,t_forestquarter.number,t_plot.number,t_plot.area_common,t_plot.area,t_plot.mangle from t_plot inner join t_forestquarter on t_plot.forestquarter=t_forestquarter.primarykey inner join t_foresty as f2 on t_forestquarter.forestdistrict = f2.primarykey inner join t_foresty as f1 on f1.primarykey =  f2.hierarchy where t_plot.primarykey = '"+plotGuid+"'")
+                query.next()
+                forestyName = str(query.value(0))
+                districtForestyName = str(query.value(1))
+                quartalNumber = str(query.value(2))
+                plotNumber = str(query.value(3))
+                area_common = str(query.value(4))
+                area = str(query.value(5))
+                mangle = str(query.value(6))
+                self.db.closeConnection()
+                
+                fileName = importFolder+u'\\Делянка_румбы_'+str(time.clock())+u'.csv'
+                f = open(fileName,'w')
+                f.write("Лесничество:"+forestyName.encode('utf-8')+";\n")
+                f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";\n")
+                f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";\n")
+                f.write("Номен лесосеки:"+plotNumber.encode('utf-8')+";\n")
+                f.write("Площадь общая:"+area_common.encode('utf-8')+";\n")
+                f.write("Площадь эксплуатационная:"+area.encode('utf-8')+";\n")
+                f.write("Магнитное склонение:"+mangle.encode('utf-8')+";\n")
+                f.write("№№;Румбы(Азимуты);Длина, м.;\n")
+                for i in range(rowCount):
+                    if lenLinePoints>0 and not rowBindingLine:
+                        rowBindingLine=True
+                        f.write(" ;Привязка; ;\n")
+                    if i-(lenLinePoints-1)>=0 and not rowPolygon:
+                        rowPolygon = True
+                        f.write(" ;Лесосека; ;\n")
+                    f.write(self.dockwidget.tableWidget_points.item(i,0).text().encode('utf-8')+";"+self.dockwidget.tableWidget_points.item(i,3).text().encode('utf-8')+";"+self.dockwidget.tableWidget_points.item(i,2).text().encode('utf-8')+";\n")
+                f.close()
+                QMessageBox.information(None,u"Импорт",u"Данные сохранены в файле:\n"+fileName)
+            
+            elif nepGuid:
+                if (not self.db.openConnection()):
+                        self.db.openConnection()
+                query = self.db.executeQuery(u"select f1.name,f2.name,t_forestquarter.number,t_plot.number,t_non_operational_area.number,t_plot.area_common,t_non_operational_area.area,t_non_operational_area.mangle from t_non_operational_area inner join t_plot on t_plot.primarykey =  t_non_operational_area.plot inner join t_forestquarter on t_plot.forestquarter=t_forestquarter.primarykey inner join t_foresty as f2 on t_forestquarter.forestdistrict = f2.primarykey inner join t_foresty as f1 on f1.primarykey =  f2.hierarchy where t_non_operational_area.primarykey = '"+nepGuid+"'")
+                query.next()
+                forestyName = str(query.value(0))
+                districtForestyName = str(query.value(1))
+                quartalNumber = str(query.value(2))
+                plotNumber = str(query.value(3))
+                nepNumber = str(query.value(4))
+                area_common = str(query.value(5))
+                area = str(query.value(6))
+                mangle = str(query.value(7))
+                self.db.closeConnection()
+                 
+                fileName = importFolder+u'\\НЭП_румбы_'+str(time.clock())+u'.csv'
+                f = open(fileName,'w')
+                f.write("Лесничество:"+forestyName.encode('utf-8')+";\n")
+                f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";\n")
+                f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";\n")
+                f.write("Номер лесосеки:"+plotNumber.encode('utf-8')+";\n")
+                f.write("Номер НЭП:"+nepNumber.encode('utf-8')+";\n")
+                f.write("Площадь общая:"+area_common.encode('utf-8')+";\n")
+                f.write("Площадь Не эксплуатационная"+area.encode('utf-8')+";\n")
+                f.write("Магнитное склонение:"+mangle.encode('utf-8')+";\n")
+                f.write("№№;Румбы(Азимуты);Длина, м.;\n")
+                for i in range(rowCount):
+                    if lenLinePoints>0 and not rowBindingLine:
+                        rowBindingLine=True
+                        f.write(" ;Привязка; ;\n")
+                    if i-(lenLinePoints-1)>=0 and not rowPolygon:
+                        rowPolygon = True
+                        f.write(" ;Лесосека; ;\n")
+                    f.write(self.dockwidget.tableWidget_points.item(i,0).text().encode('utf-8')+";"+self.dockwidget.tableWidget_points.item(i,3).text().encode('utf-8')+";"+self.dockwidget.tableWidget_points.item(i,2).text().encode('utf-8')+";\n")
+                f.close()
+                QMessageBox.information(None,u"Импорт",u"Данные сохранены в файле:\n"+fileName)
+    
+    def importCoordsPoints(self):
+        plotGuid = self.tool_draw.getGuidPlot()
+        nepGuid = self.tool_draw.getNepGuid()
+        userFolder = os.path.expanduser('~')
+        documentsFolder = os.path.join(userFolder,'Documents')
+        importFolder = os.path.join(documentsFolder,u'Делянки')
+        if not os.path.exists(importFolder):
+            os.makedirs(importFolder)
+
+        rowBindingLine = False
+        rowPolygon = False
+        #print  "forestyName",forestyName.encode('utf-8')
+        if plotGuid:
+            if (not self.db.openConnection()):
+                    self.db.openConnection()
+            query = self.db.executeQuery(u"select f1.name,f2.name,t_forestquarter.number,t_plot.number,t_plot.area_common,t_plot.area,t_plot.mangle from t_plot inner join t_forestquarter on t_plot.forestquarter=t_forestquarter.primarykey inner join t_foresty as f2 on t_forestquarter.forestdistrict = f2.primarykey inner join t_foresty as f1 on f1.primarykey =  f2.hierarchy where t_plot.primarykey = '"+plotGuid+"'")
+            query.next()
+            forestyName = str(query.value(0))
+            districtForestyName = str(query.value(1))
+            quartalNumber = str(query.value(2))
+            plotNumber = str(query.value(3))
+            area_common = str(query.value(4))
+            area = str(query.value(5))
+            mangle = str(query.value(6))
+            
+            fileName = importFolder+u'\\Делянка_координаты'+str(time.clock())+u'.csv'
+            f = open(fileName,'w')
+            f.write("Лесничество:"+forestyName.encode('utf-8')+";\n")
+            f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";\n")
+            f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";\n")
+            f.write("Номен лесосеки:"+plotNumber.encode('utf-8')+";\n")
+            f.write("Площадь общая:"+area_common.encode('utf-8')+";\n")
+            f.write("Площадь эксплуатационная:"+area.encode('utf-8')+";\n")
+            f.write("Магнитное склонение:"+mangle.encode('utf-8')+";\n")
+            f.write("№№;Широта;Долгота;X;Y;\n")
+
+            
+            query = self.db.executeQuery(u"select t_plot_point.number::int as pointNumber,split_part(ST_AsLatLonText(st_transform(t_plot_point.shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(t_plot_point.shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude,plot,st_x(st_transform(t_plot_point.shape,4326)),st_y(st_transform(t_plot_point.shape,4326)),t_plot_point.type_object from(	select * from (	select row_number() over(partition by plot_fk,number::int order by plot_fk,number::int,type_object desc),* 	from t_plot_point order by plot_fk,number::int) as t_plot_point where row_number!=2) as t_plot_point inner join t_rumbs on split_part(t_rumbs.number,'-',1)=t_plot_point.number and t_rumbs.plot = t_plot_point.plot_fk inner join t_plot on t_plot.primarykey = t_plot_point.plot_fk where t_plot.primarykey = '"+plotGuid+"'")
+            while(query.next()):
+                if str(query.value(6))=='5b8e90b5-df13-46b6-bf55-59146110dc28' and not rowBindingLine:
+                    rowBindingLine=True
+                    f.write(" ;Привязка; ;\n")
+                if str(query.value(6))=='b6dcbdf5-0c43-4cbd-8742-166d59b89504' and not rowPolygon:
+                    rowPolygon = True
+                    f.write(" ;Лесосека; ;\n")
+                f.write(str(query.value(0)).encode("utf-8")+";"+str(query.value(1)).encode("utf-8")+";"+str(query.value(2)).encode("utf-8")+";"+str(query.value(4)).encode("utf-8")+";"+str(query.value(5)).encode("utf-8")+";\n")
+            f.close()
+            self.db.closeConnection()
+
+            QMessageBox.information(None,u"Импорт",u"Данные сохранены в файле:\n"+fileName)
+        
+        elif nepGuid:
+            if (not self.db.openConnection()):
+                    self.db.openConnection()
+            query = self.db.executeQuery(u"select f1.name,f2.name,t_forestquarter.number,t_plot.number,t_non_operational_area.number,t_plot.area_common,t_non_operational_area.area,t_non_operational_area.mangle from t_non_operational_area inner join t_plot on t_plot.primarykey =  t_non_operational_area.plot inner join t_forestquarter on t_plot.forestquarter=t_forestquarter.primarykey inner join t_foresty as f2 on t_forestquarter.forestdistrict = f2.primarykey inner join t_foresty as f1 on f1.primarykey =  f2.hierarchy where t_non_operational_area.primarykey = '"+nepGuid+"'")
+            query.next()
+            forestyName = str(query.value(0))
+            districtForestyName = str(query.value(1))
+            quartalNumber = str(query.value(2))
+            plotNumber = str(query.value(3))
+            nepNumber = str(query.value(4))
+            area_common = str(query.value(5))
+            area = str(query.value(6))
+            mangle = str(query.value(7))
+            
+            fileName = importFolder+u'\\НЭП_координаты'+str(time.clock())+u'.csv'
+            f = open(fileName,'w')
+            f.write("Лесничество:"+forestyName.encode('utf-8')+";\n")
+            f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";\n")
+            f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";\n")
+            f.write("Номер лесосеки:"+plotNumber.encode('utf-8')+";\n")
+            f.write("Номен НЭП:"+nepNumber.encode('utf-8')+";\n")
+            f.write("Площадь общая:"+area_common.encode('utf-8')+";\n")
+            f.write("Площадь Не эксплуатационная:"+area.encode('utf-8')+";\n")
+            f.write("Магнитное склонение:"+mangle.encode('utf-8')+";\n")
+            f.write("№№;Широта;Долгота;X;Y;\n")
+
+            
+            query = self.db.executeQuery(u"select asd.pointNumber,asd.Latitude,asd.longitude, st_x(st_transform(asd.shape,4326)),st_y(st_transform( asd.shape,4326)),t_noa_rumbs.type from ( select t_noa_point.number as pointNumber,split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude,noa,t_noa_point.shape from (select * from (select row_number() over(partition by noa,number order by \"order\",type_object),* from t_noa_point order by noa,\"order\") as asd where row_number!=2) as t_noa_point) as asd inner join t_noa_rumbs on asd.pointNumber=split_part(t_noa_rumbs.number,'-',1) and t_noa_rumbs.noa = asd.noa inner join t_non_operational_area on  asd.noa = t_non_operational_area.primarykey where t_non_operational_area.primarykey = '"+nepGuid+"'")
+            while(query.next()):
+                if str(query.value(5))=='5b8e90b5-df13-46b6-bf55-59146110dc28' and not rowBindingLine:
+                    rowBindingLine=True
+                    f.write(" ;Привязка; ;\n")
+                if str(query.value(5))=='b6dcbdf5-0c43-4cbd-8742-166d59b89504' and not rowPolygon:
+                    rowPolygon = True
+                    f.write(" ;Лесосека; ;\n")
+                f.write(str(query.value(0)).encode("utf-8")+";"+str(query.value(1)).encode("utf-8")+";"+str(query.value(2)).encode("utf-8")+";"+str(query.value(3)).encode("utf-8")+";"+str(query.value(4)).encode("utf-8")+";\n")
+            f.close()
+            self.db.closeConnection()
+
+            QMessageBox.information(None,u"Импорт",u"Данные сохранены в файле:\n"+fileName)
+    
     def pushButton_reset_click(self):
         self.tool_draw.resetAll()
     def maketFourClick(self):
@@ -3799,7 +4104,7 @@ class Plots(WorkWithTableAndPoints):
             elif self.dockwidget.comboBox_typeOfCoords.currentIndex() == 1:
                 coordsType = u"ST_X(st_transform(shape,4326))::numeric(28,5) as X, ST_Y(st_transform(shape,4326))::numeric(28,5) as Y"
             query = self.db.executeQuery(u"select distinct number::int,"+coordsType+" from t_plot_point where plot_fk = '"+guid+u"' order by number")
-            print "QUERYPLOT:",u"select distinct number::int,"+coordsType+" from t_plot_point where plot_fk = '"+guid+u"' order by number"
+            #print "QUERYPLOT:",u"select distinct number::int,"+coordsType+" from t_plot_point where plot_fk = '"+guid+u"' order by number"
             
             #print u"select distinct number::int,split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude, trim(split_part(ST_AsLatLonText(st_transform(shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude from t_plot_point where plot_fk = '"+guid+u"' order by number"
             while(query.next()):
