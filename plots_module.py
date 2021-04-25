@@ -161,6 +161,7 @@ class WorkWithTableAndPoints:
         polygonUuid = uuid.uuid4()
         #ищем слой квартала
         layer = self.findLayerByPattern("\"public\".\"t_forestquarter\"")
+        print "layerQuart:",layer.source()
         #ищем слой выдела
         layerTax=self.findLayerByPattern("table=\"public\".\"t_taxationisolated\"","type=MultiPolygon")
         layerPlot = self.findLayerByPattern("table=\"public\".\"t_plot\"","type=Polygon")
@@ -191,7 +192,7 @@ class WorkWithTableAndPoints:
                 forestquartersList = []
                 #просматриваем все объекты, если пересекается с делянкой, то записываем в лист
                 for feature in layer.getFeatures():
-                    if feature.geometry().intersects(geometryPoly):
+                    if feature.geometry() !=None and feature.geometry().intersects(geometryPoly):
                         forestquartersList.append(feature)
                 maxArea = 0
                 #Просматриваем все кварталы в листе
@@ -4423,10 +4424,12 @@ class Plots(WorkWithTableAndPoints):
                     coords_plots_html.loadHtml()
                 lastItemPositionY = positionTablesY[i]+heightTables[i]
                 
-            
+            # if(len(nepFinalTable)>0) and pageNumber==1:
+                # pageNumber+=1
+                # lastItemPositionY = 10
             for key in nepFinalTable.keys():
-                
-                if(len(nepHeightTable[key])>0 and (lastItemPositionY+5.5+nepHeightTable[key][0])>maxPageHeight):
+                print "lastItemPositionY+5.5+nepHeightTable[key][0]:",lastItemPositionY+5.5+nepHeightTable[key][0]
+                if(len(nepHeightTable[key])>0 and (lastItemPositionY+5.5+nepHeightTable[key][0])>maxPageHeight) or pageNumber==1:
                     pageNumber +=1
                     lastItemPositionY = 10
                 nep_label = QgsComposerLabel(newcomp.composition())
@@ -4448,6 +4451,11 @@ class Plots(WorkWithTableAndPoints):
                     if (lastItemPositionY+nepHeightTable[key][i]>maxPageHeight):
                         pageNumber +=1
                         lastItemPositionY = 10
+                    print "pageNumber:",pageNumber
+                    print "pageCount:",pageCount
+                    if pageNumber>pageCount:
+                        newcomp.composition().setNumPages(pageNumber)
+                        pageCount=pageNumber
                     rumb_nep_composerFrame.setItemPosition(30,lastItemPositionY,page=pageNumber)
                     rumb_nep_html.setContentMode(1)
                     rumb_nep_html.setHtml(nepFinalTable[key][i])
