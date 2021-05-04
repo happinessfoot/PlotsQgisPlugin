@@ -2754,14 +2754,16 @@ class Draw(QgsMapToolEmitPoint,WorkWithTableAndPoints):
             layerPlot = self.findLayerByPattern("table=\"public\".\"t_plot\"","type=Polygon")
             if layerPoint!=None:
                 ##print "REDOCOMMANDADDPOINT SELFPOINTS[-1]", self.points[-1]
-                request = QgsFeatureRequest().setFilterRect(QgsRectangle(point,point))#QgsPoint(self.points[-1].x(),self.points[-1].y()) QgsPoint(point.x()-,point.y()+50),QgsPoint(point.x()+50,point.y()-50)
+                rect = QgsRectangle(QgsPoint(point.x()-1,point.y()+1),QgsPoint(point.x()+1,point.y()-1))
+                request = QgsFeatureRequest().setFilterRect(rect)#QgsPoint(self.points[-1].x(),self.points[-1].y()) QgsPoint(point.x()-,point.y()+50),QgsPoint(point.x()+50,point.y()-50)
                 #print "request"
                 plotFeature = None
                 for f in layerPlot.getFeatures(request):
-                    plotFeature=f
-                    break
-                #print "plotFeature",plotFeature['primarykey']
-                #print "point",point.wellKnownText()
+                    if(f.geometry().intersects(rect)):
+                        plotFeature=f
+                        break
+                print "plotFeature",plotFeature['primarykey']
+                print "point",point.wellKnownText()
                 #print "poly",plotFeature.geometry().exportToWkt()
                 pointPlotFeature = None
                 if plotFeature!=None:
@@ -2769,10 +2771,10 @@ class Draw(QgsMapToolEmitPoint,WorkWithTableAndPoints):
                     
                     for featurePoint in layerPoint.getFeatures(QgsFeatureRequest(QgsExpression("plot_fk='"+plotFeature['primarykey']+"'"))):
                         
-                        #print featurePoint.geometry().asPoint().wellKnownText()
+                        print "FEATUREPOINT:",featurePoint.geometry().asPoint().wellKnownText()
                         if point == featurePoint.geometry().asPoint():
                             pointPlotFeature = featurePoint
-                            #print "True"
+                            print "True"
                             break
                             
                 if pointPlotFeature!=None:
