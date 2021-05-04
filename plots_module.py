@@ -82,7 +82,7 @@ class WorkWithTableAndPoints:
                 area = round(geometryPoly.area()/10000,1)
                 plotList = []
                 for feature in layerPlot.getFeatures():
-                    if feature.geometry().intersects(geometryPoly):
+                    if feature.geometry()!=None and feature.geometry().intersects(geometryPoly):
                         plotList.append(feature)
                 maxArea = 0
                 for feature in plotList:
