@@ -160,7 +160,7 @@ class WorkWithTableAndPoints:
         #формируем guid 4 версии
         polygonUuid = uuid.uuid4()
         #ищем слой квартала
-        layer = self.findLayerByPattern("\"public\".\"t_forestquarter\"")
+        layer = self.findLayerByPattern("table=\"public\".\"t_forestquarter\"","type=MultiPolygon")
         print "layerQuart:",layer.source()
         #ищем слой выдела
         layerTax=self.findLayerByPattern("table=\"public\".\"t_taxationisolated\"","type=MultiPolygon")
@@ -360,7 +360,7 @@ class WorkWithTableAndPoints:
         linePoints = draw.getLinePoints()
         if(guidPlot and db!=None):
             srid = None
-            layerQuart = self.findLayerByPattern("\"public\".\"t_forestquarter\"")
+            layerQuart = self.findLayerByPattern("table=\"public\".\"t_forestquarter\"","type=MultiPolygon")
             layerPlot = self.findLayerByPattern("\"public\".\"t_plot\"")
             srid = layerQuart.source().split(" ")[7].split("=")[1]
             layerTax=self.findLayerByPattern("table=\"public\".\"t_taxationisolated\"","type=MultiPolygon")
@@ -1570,7 +1570,7 @@ class CommandDeleteBindingLine(QUndoCommand,WorkWithTableAndPoints):
         self.linePoints = self.draw.getLinePoints()
         if(self.guid and self.db!=None):
             srid = None
-            layerQuart = self.findLayerByPattern("\"public\".\"t_forestquarter\"")
+            layerQuart = self.findLayerByPattern("table=\"public\".\"t_forestquarter\"","type=MultiPolygon")
             layerPlot = self.findLayerByPattern("\"public\".\"t_plot\"")
             srid = layerQuart.source().split(" ")[7].split("=")[1]
             layerTax=self.findLayerByPattern("table=\"public\".\"t_taxationisolated\"","type=MultiPolygon")
@@ -1817,7 +1817,7 @@ class CommandAddBindingLine(QUndoCommand,WorkWithTableAndPoints):
         self.linePoints = self.draw.getLinePoints()
         if(self.guid and self.db!=None):
             srid = None
-            layerQuart = self.findLayerByPattern("\"public\".\"t_forestquarter\"")
+            layerQuart = self.findLayerByPattern("table=\"public\".\"t_forestquarter\"","type=MultiPolygon")
             layerPlot = self.findLayerByPattern("\"public\".\"t_plot\"")
             srid = layerQuart.source().split(" ")[7].split("=")[1]
             layerTax=self.findLayerByPattern("table=\"public\".\"t_taxationisolated\"","type=MultiPolygon")
