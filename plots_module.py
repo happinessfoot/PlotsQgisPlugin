@@ -442,10 +442,10 @@ class WorkWithTableAndPoints:
     def findLayerByPattern(self, table, geometryType=None):
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
             if(geometryType!=None):
-                if (table in layer.dataProvider().dataSourceUri() and geometryType in layer.dataProvider().dataSourceUri()):
+                if (type(layer) is QgsVectorLayer and table in layer.dataProvider().dataSourceUri() and geometryType in layer.dataProvider().dataSourceUri()):
                     return layer
             else:
-                if(table in layer.dataProvider().dataSourceUri()):
+                if(type(layer) is QgsVectorLayer and table in layer.dataProvider().dataSourceUri()):
                     return layer
         return None
     
@@ -2435,7 +2435,7 @@ class DataBase:
         #comboboxText = self.dockwidget.comboBox_databases.currentText().split(";")
         ####print comboboxText[0],comboboxText[1]
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
-            if findPattern in layer.dataProvider().dataSourceUri(): #and comboboxText[0].split(":")[1] in layer.dataProvider().dataSourceUri() and comboboxText[1].split(":")[1] in layer.dataProvider().dataSourceUri():
+            if type(layer) is QgsVectorLayer and findPattern in layer.dataProvider().dataSourceUri(): #and comboboxText[0].split(":")[1] in layer.dataProvider().dataSourceUri() and comboboxText[1].split(":")[1] in layer.dataProvider().dataSourceUri():
                 layers.append(layer)
         layerTmp = layers[len(layers)-1]   
         data= layerTmp.dataProvider().dataSourceUri().translate({ord('\''):None,ord('\"'):None}).split(" ")
@@ -2531,7 +2531,7 @@ class Draw(QgsMapToolEmitPoint,WorkWithTableAndPoints):
         self.db = DataBase(self.dockwidget)
         checkLayers = False
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
-            if "\"public\".\"t_plot\"" in layer.dataProvider().dataSourceUri():
+            if type(layer) is QgsVectorLayer and "\"public\".\"t_plot\"" in layer.dataProvider().dataSourceUri():
                 self.db.setConnectionInfo()
                 checkLayers = True
         self.oldValue = ""
@@ -3769,14 +3769,14 @@ class Plots(WorkWithTableAndPoints):
             fileName = importFolder+u'\\НЭП_румбы_'+str(time.clock())+u'.csv'
             files += fileName+"\n"
             f = open(fileName,'w')
-            f.write("Лесничество:"+neps[key][0].encode('utf-8')+";\n")
-            f.write("Уч. Лесничество:"+neps[key][1].encode('utf-8')+";\n")
-            f.write("Номер квартала:"+neps[key][2].encode('utf-8')+";\n")
-            f.write("Номер лесосеки:"+neps[key][3].encode('utf-8')+";\n")
-            f.write("Номер НЭП:"+neps[key][4].encode('utf-8')+";\n")
-            f.write("Площадь общая:"+neps[key][5].encode('utf-8')+";\n")
-            f.write("Площадь Не эксплуатационная"+neps[key][6].encode('utf-8')+";\n")
-            f.write("Магнитное склонение:"+neps[key][7].encode('utf-8')+";\n")
+            f.write("Лесничество:"+neps[key][0].encode('utf-8')+";"+";"+";\n")
+            f.write("Уч. Лесничество:"+neps[key][1].encode('utf-8')+";"+";"+";\n")
+            f.write("Номер квартала:"+neps[key][2].encode('utf-8')+";"+";"+";\n")
+            f.write("Номер лесосеки:"+neps[key][3].encode('utf-8')+";"+";"+";\n")
+            f.write("Номер НЭП:"+neps[key][4].encode('utf-8')+";"+";"+";\n")
+            f.write("Площадь общая:"+neps[key][5].encode('utf-8')+";"+";"+";\n")
+            f.write("Площадь Не эксплуатационная"+neps[key][6].encode('utf-8')+";"+";"+";\n")
+            f.write("Магнитное склонение:"+neps[key][7].encode('utf-8')+";"+";"+";\n")
             f.write("№№;Румбы(Азимуты);Длина, м.;\n")
             
             query = self.db.executeQuery(u"select t_noa_rumbs.number,t_noa_rumbs.rumb,t_noa_rumbs.distance,t_noa_rumbs.type from ( select t_noa_point.number as pointNumber,split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',1) as Latitude,trim(split_part(ST_AsLatLonText(st_transform(t_noa_point.shape,4326),'C D°M.MMMM''|'),'|',2)) as longitude,	noa,t_noa_point.shape from (select * from (select row_number() over(partition by noa,number order by \"order\",type_object),* from t_noa_point order by noa,\"order\") as asd where row_number!=2 ) as t_noa_point ) as asd inner join t_noa_rumbs on asd.pointNumber=split_part(t_noa_rumbs.number,'-',1) and t_noa_rumbs.noa = asd.noa inner join t_non_operational_area on  asd.noa = t_non_operational_area.primarykey where t_non_operational_area.primarykey = '"+key+"'")
@@ -3826,13 +3826,13 @@ class Plots(WorkWithTableAndPoints):
                 
                 fileName = importFolder+u'\\Делянка_румбы_'+str(time.clock())+u'.csv'
                 f = open(fileName,'w')
-                f.write("Лесничество:"+forestyName.encode('utf-8')+";\n")
-                f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";\n")
-                f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";\n")
-                f.write("Номен лесосеки:"+plotNumber.encode('utf-8')+";\n")
-                f.write("Площадь общая:"+area_common.encode('utf-8')+";\n")
-                f.write("Площадь эксплуатационная:"+area.encode('utf-8')+";\n")
-                f.write("Магнитное склонение:"+mangle.encode('utf-8')+";\n")
+                f.write("Лесничество:"+forestyName.encode('utf-8')+";"+";"+";\n")
+                f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";"+";"+";\n")
+                f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";"+";"+";\n")
+                f.write("Номер лесосеки:"+plotNumber.encode('utf-8')+";"+";"+";\n")
+                f.write("Площадь общая:"+area_common.encode('utf-8')+";"+";"+";\n")
+                f.write("Площадь эксплуатационная:"+area.encode('utf-8')+";"+";"+";\n")
+                f.write("Магнитное склонение:"+mangle.encode('utf-8')+";"+";"+";\n")
                 f.write("№№;Румбы(Азимуты);Длина, м.;\n")
                 for i in range(rowCount):
                     if lenLinePoints>0 and not rowBindingLine:
@@ -3862,14 +3862,14 @@ class Plots(WorkWithTableAndPoints):
                  
                 fileName = importFolder+u'\\НЭП_румбы_'+str(time.clock())+u'.csv'
                 f = open(fileName,'w')
-                f.write("Лесничество:"+forestyName.encode('utf-8')+";\n")
-                f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";\n")
-                f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";\n")
-                f.write("Номер лесосеки:"+plotNumber.encode('utf-8')+";\n")
-                f.write("Номер НЭП:"+nepNumber.encode('utf-8')+";\n")
-                f.write("Площадь общая:"+area_common.encode('utf-8')+";\n")
-                f.write("Площадь Не эксплуатационная"+area.encode('utf-8')+";\n")
-                f.write("Магнитное склонение:"+mangle.encode('utf-8')+";\n")
+                f.write("Лесничество:"+forestyName.encode('utf-8')+";"+";"+";\n")
+                f.write("Уч. Лесничество:"+districtForestyName.encode('utf-8')+";"+";"+";\n")
+                f.write("Номер квартала:"+quartalNumber.encode('utf-8')+";"+";"+";\n")
+                f.write("Номер лесосеки:"+plotNumber.encode('utf-8')+";"+";"+";\n")
+                f.write("Номер НЭП:"+nepNumber.encode('utf-8')+";"+";"+";\n")
+                f.write("Площадь общая:"+area_common.encode('utf-8')+";"+";"+";\n")
+                f.write("Площадь Не эксплуатационная"+area.encode('utf-8')+";"+";"+";\n")
+                f.write("Магнитное склонение:"+mangle.encode('utf-8')+";"+";"+";\n")
                 f.write("№№;Румбы(Азимуты);Длина, м.;\n")
                 for i in range(rowCount):
                     if lenLinePoints>0 and not rowBindingLine:
@@ -4189,7 +4189,7 @@ class Plots(WorkWithTableAndPoints):
                 for i in range(len(nepTableData[key])):
                     #print "nepTableData["+str(key)+"]["+str(i)+"]"
                     if nepPartTable == 0:
-                        nepFinalTable[key].append(nepHeader+u"<body>\n<table> \n <tr> \n <td>Площадь общая, га</td> \n <td colspan='2'>Площадь эксплуатационная, га</td> \n </tr> \n <tr> \n <td>123</td> \n <td colspan='2'>123</td>\n </tr>\n <tr>\n <th>№№</th>\n <th width='134px'>Румбы</th>\n <th width='100px'>Длина, м</th>\n </tr> \n")
+                        nepFinalTable[key].append(nepHeader+u"<body>\n<table> \n <tr> \n <td>Площадь общая, га</td> \n <td colspan='2'>Площадь не эксплуатационная, га</td> \n </tr> \n <tr> \n <td>"+str(area_common)+u"</td> \n <td colspan='2'>"+str(nepAreaInfo[key])+u"</td>\n </tr>\n <tr>\n <th>№№</th>\n <th width='134px'>Румбы</th>\n <th width='100px'>Длина, м</th>\n </tr> \n")
                         nepCoordsFinalTable[key].append(nepCoordHeader.replace(u'TD:first-child{width:72px}',u'')+u"<body>\n<table> \n  <tr> \n <th rowspan='2' width='50'><font size='2'>Номера характерных точек</font></th> \n <th colspan='2'>Координаты</th> \n </tr> \n   "+coordRow)
                         nepHeightTable[key].append(23.1)
                         nepCoordsHeightTable[key].append(13)
@@ -4425,10 +4425,13 @@ class Plots(WorkWithTableAndPoints):
                     coords_plots_html.setHtml(coordTableData[i+1])
                     coords_plots_html.loadHtml()
                 lastItemPositionY = positionTablesY[i]+heightTables[i]
-                
+                print "lastItemPositionY",lastItemPositionY
             # if(len(nepFinalTable)>0) and pageNumber==1:
                 # pageNumber+=1
                 # lastItemPositionY = 10
+            if len(pointTrArray)==0:
+                pageNumber+=1
+                lastItemPositionY = 10
             for key in nepFinalTable.keys():
                 print "lastItemPositionY+5.5+nepHeightTable[key][0]:",lastItemPositionY+5.5+nepHeightTable[key][0]
                 if(len(nepHeightTable[key])>0 and (lastItemPositionY+5.5+nepHeightTable[key][0])>maxPageHeight) or pageNumber==1:
